@@ -111,14 +111,335 @@ bool testReduction() {
 // Test scan operations
 bool testScan() {
     std::cout << "=== Testing Scan Operations ===" << std::endl;
-    std::cout << "Scan tests skipped (algorithm needs fix)" << std::endl << std::endl;
+
+    // Test small arrays first (single block)
+    {
+        const size_t N = 100;
+        std::vector<float> h_input(N);
+        std::vector<float> h_expected(N);
+
+        // Simple sequence: 1, 2, 3, 4, ...
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = static_cast<float>(i + 1);
+            float sum = 0;
+            for (size_t j = 0; j <= i; j++) sum += h_input[j];
+            h_expected[i] = sum;
+        }
+
+        float* d_input;
+        cudaMalloc(&d_input, N * sizeof(float));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(float), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<float>(N);
+        auto result = scan.scanInclusive(d_input, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Inclusive scan failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            return false;
+        }
+
+        std::vector<float> h_output(N);
+        cudaMemcpy(h_output.data(), result.d_output, N * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaDeviceSynchronize();
+
+        bool pass = true;
+        for (size_t i = 0; i < N; i++) {
+            if (std::abs(h_output[i] - h_expected[i]) > 0.001f) {
+                std::cerr << "  ERROR at index " << i << ": got " << h_output[i]
+                          << ", expected " << h_expected[i] << std::endl;
+                pass = false;
+                break;
+            }
+        }
+
+        if (pass) {
+            std::cout << "  Single block inclusive scan: PASSED" << std::endl;
+        }
+
+        cudaFree(d_input);
+        if (!pass) return false;
+    }
+
+    // Test multi-block array
+    {
+        const size_t N = 10000;
+        std::vector<float> h_input(N);
+        std::vector<float> h_expected(N);
+
+        std::mt19937 gen(42);
+        std::uniform_real_distribution<float> dist(0.0f, 10.0f);
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = dist(gen);
+        }
+
+        float sum = 0;
+        for (size_t i = 0; i < N; i++) {
+            sum += h_input[i];
+            h_expected[i] = sum;
+        }
+
+        float* d_input;
+        cudaMalloc(&d_input, N * sizeof(float));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(float), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<float>(N);
+        auto result = scan.scanInclusive(d_input, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Multi-block inclusive scan failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            return false;
+        }
+
+        std::vector<float> h_output(N);
+        cudaMemcpy(h_output.data(), result.d_output, N * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaDeviceSynchronize();
+
+        bool pass = true;
+        float max_diff = 0.0f;
+        int max_diff_idx = -1;
+        for (size_t i = 0; i < N; i++) {
+            float diff = std::abs(h_output[i] - h_expected[i]);
+            if (diff > max_diff) {
+                max_diff = diff;
+                max_diff_idx = i;
+            }
+            if (diff > 1.0f) {  // Use larger tolerance for accumulated sums
+                std::cerr << "  ERROR at index " << i << ": got " << h_output[i]
+                          << ", expected " << h_expected[i] << ", diff=" << diff << std::endl;
+                pass = false;
+                if (i > 20) break;
+                break;
+            }
+        }
+        if (max_diff_idx >= 0) {
+            std::cout << "  Max diff: " << max_diff << " at index " << max_diff_idx << std::endl;
+        }
+
+        if (pass) {
+            std::cout << "  Multi-block inclusive scan: PASSED" << std::endl;
+        }
+
+        cudaFree(d_input);
+        if (!pass) return false;
+    }
+
+    // Test exclusive scan
+    {
+        const size_t N = 1000;
+        std::vector<int> h_input(N);
+        std::vector<int> h_expected(N);
+
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = static_cast<int>(i + 1);
+        }
+        h_expected[0] = 0;
+        for (size_t i = 1; i < N; i++) {
+            h_expected[i] = h_expected[i-1] + h_input[i-1];
+        }
+
+        int* d_input;
+        cudaMalloc(&d_input, N * sizeof(int));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(int), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<int>(N);
+        auto result = scan.scanExclusive(d_input, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Exclusive scan failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            return false;
+        }
+
+        std::vector<int> h_output(N);
+        cudaMemcpy(h_output.data(), result.d_output, N * sizeof(int), cudaMemcpyDeviceToHost);
+        cudaDeviceSynchronize();
+
+        bool pass = true;
+        for (size_t i = 0; i < N; i++) {
+            if (h_output[i] != h_expected[i]) {
+                std::cerr << "  ERROR at index " << i << ": got " << h_output[i]
+                          << ", expected " << h_expected[i] << std::endl;
+                pass = false;
+                break;
+            }
+        }
+
+        if (pass) {
+            std::cout << "  Exclusive scan: PASSED" << std::endl;
+        }
+
+        cudaFree(d_input);
+        if (!pass) return false;
+    }
+
+    std::cout << "Scan tests PASSED" << std::endl << std::endl;
     return true;
 }
 
 // Test stream compaction
 bool testCompact() {
     std::cout << "=== Testing Stream Compaction ===" << std::endl;
-    std::cout << "Compaction tests skipped (depends on scan)" << std::endl << std::endl;
+
+    // Basic compact test
+    {
+        const size_t N = 100;
+        std::vector<float> h_input(N);
+        std::vector<int> h_predicate(N);
+
+        // Keep even-indexed elements
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = static_cast<float>(i);
+            h_predicate[i] = (i % 2 == 0) ? 1 : 0;
+        }
+
+        float* d_input;
+        int* d_predicate;
+        cudaMalloc(&d_input, N * sizeof(float));
+        cudaMalloc(&d_predicate, N * sizeof(int));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_predicate, h_predicate.data(), N * sizeof(int), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<float>(N);
+        auto result = scan.compact(d_input, d_predicate, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Compact failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        size_t expected_count = N / 2;
+        if (result.count != expected_count) {
+            std::cerr << "  ERROR: Expected " << expected_count << " elements, got " << result.count << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        std::vector<float> h_output(expected_count);
+        cudaMemcpy(h_output.data(), result.d_output, expected_count * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaDeviceSynchronize();
+
+        bool pass = true;
+        for (size_t i = 0; i < expected_count; i++) {
+            float expected = static_cast<float>(i * 2);
+            if (std::abs(h_output[i] - expected) > 0.001f) {
+                std::cerr << "  ERROR at output index " << i << ": got " << h_output[i]
+                          << ", expected " << expected << std::endl;
+                pass = false;
+                break;
+            }
+        }
+
+        if (pass) {
+            std::cout << "  Basic compact: PASSED" << std::endl;
+        }
+
+        cudaFree(d_input);
+        cudaFree(d_predicate);
+        if (!pass) return false;
+    }
+
+    // Test compact all zeros
+    {
+        const size_t N = 50;
+        std::vector<float> h_input(N);
+        std::vector<int> h_predicate(N, 0);
+
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = static_cast<float>(i);
+        }
+
+        float* d_input;
+        int* d_predicate;
+        cudaMalloc(&d_input, N * sizeof(float));
+        cudaMalloc(&d_predicate, N * sizeof(int));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_predicate, h_predicate.data(), N * sizeof(int), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<float>(N);
+        auto result = scan.compact(d_input, d_predicate, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Compact all zeros failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        if (result.count != 0) {
+            std::cerr << "  ERROR: Expected 0 elements, got " << result.count << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        std::cout << "  Compact all zeros: PASSED" << std::endl;
+
+        cudaFree(d_input);
+        cudaFree(d_predicate);
+    }
+
+    // Test compact all ones
+    {
+        const size_t N = 50;
+        std::vector<float> h_input(N);
+        std::vector<int> h_predicate(N, 1);
+
+        for (size_t i = 0; i < N; i++) {
+            h_input[i] = static_cast<float>(i);
+        }
+
+        float* d_input;
+        int* d_predicate;
+        cudaMalloc(&d_input, N * sizeof(float));
+        cudaMalloc(&d_predicate, N * sizeof(int));
+        cudaMemcpy(d_input, h_input.data(), N * sizeof(float), cudaMemcpyHostToDevice);
+        cudaMemcpy(d_predicate, h_predicate.data(), N * sizeof(int), cudaMemcpyHostToDevice);
+
+        auto scan = MyEngine::CUDAScan::create<float>(N);
+        auto result = scan.compact(d_input, d_predicate, N);
+
+        if (!result.ok()) {
+            std::cerr << "  ERROR: Compact all ones failed with error " << result.error << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        if (result.count != N) {
+            std::cerr << "  ERROR: Expected " << N << " elements, got " << result.count << std::endl;
+            cudaFree(d_input);
+            cudaFree(d_predicate);
+            return false;
+        }
+
+        std::vector<float> h_output(N);
+        cudaMemcpy(h_output.data(), result.d_output, N * sizeof(float), cudaMemcpyDeviceToHost);
+        cudaDeviceSynchronize();
+
+        bool pass = true;
+        for (size_t i = 0; i < N; i++) {
+            if (std::abs(h_output[i] - static_cast<float>(i)) > 0.001f) {
+                std::cerr << "  ERROR at index " << i << std::endl;
+                pass = false;
+                break;
+            }
+        }
+
+        if (pass) {
+            std::cout << "  Compact all ones: PASSED" << std::endl;
+        }
+
+        cudaFree(d_input);
+        cudaFree(d_predicate);
+        if (!pass) return false;
+    }
+
+    std::cout << "Compaction tests PASSED" << std::endl << std::endl;
     return true;
 }
 
