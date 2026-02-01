@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/math/Vector4.h"
+#include "core/math/Color.h"
 
 namespace MyEngine {
 
@@ -15,9 +16,6 @@ enum PixelFormat {
     PF_LUMINANCE,
     PF_LUMINANCE_ALPHA
 };
-
-// 使用 Vector4 作为颜色 (r, g, b, a)
-using Color = Vector4;
 
 class Image {
 public:

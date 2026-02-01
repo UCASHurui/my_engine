@@ -160,6 +160,17 @@ struct Matrix4 {
         );
     }
 
+    Vector4 operator*(const Vector4& v) const {
+        float w = m[0][3] * v.x + m[1][3] * v.y + m[2][3] * v.z + m[3][3] * v.w;
+        if (w == 0) w = 1;
+        return Vector4(
+            (m[0][0] * v.x + m[0][1] * v.y + m[0][2] * v.z + m[0][3] * v.w) / w,
+            (m[1][0] * v.x + m[1][1] * v.y + m[1][2] * v.z + m[1][3] * v.w) / w,
+            (m[2][0] * v.x + m[2][1] * v.y + m[2][2] * v.z + m[2][3] * v.w) / w,
+            w
+        );
+    }
+
     Matrix4 operator+(const Matrix4& other) const {
         Matrix4 r;
         for (int i = 0; i < 4; i++)

@@ -4,10 +4,10 @@ CXX = g++
 CXXFLAGS = -std=c++20 -Wall -Wextra -Wpedantic -I.
 LDFLAGS = -lGL -lpthread
 
-# 源文件 (仅实际存在的文件，排除 scene/resources 因为会被 scene/**/*.cpp 包含)
+# 源文件 (避免重复)
 SOURCES = $(wildcard core/**/*.cpp core/*.cpp) \
-          $(wildcard scene/*/*.cpp) \
-          $(wildcard renderer/*.cpp renderer/opengl/*.cpp) \
+          $(wildcard scene/2d/*.cpp scene/3d/*.cpp scene/main/*.cpp scene/resources/*.cpp scene/physics/*.cpp scene/particles/*.cpp scene/audio/*.cpp scene/animation/*.cpp scene/scripting/*.cpp) \
+          $(wildcard renderer/**/*.cpp renderer/*.cpp) \
           $(wildcard servers/**/*.cpp servers/*.cpp) \
           $(wildcard platform/**/*.cpp platform/*.cpp) \
           main.cpp
