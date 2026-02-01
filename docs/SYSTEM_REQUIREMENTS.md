@@ -16,37 +16,32 @@
 
 **Purpose**: CUDA compiler (nvcc), runtime libraries, development headers
 
-**Installation**:
+**Status**: ✅ INSTALLED (v12.0)
 
 ```bash
-# Option 1: Using package manager (Recommended)
-sudo apt-get update
-sudo apt-get install -y nvidia-cuda-toolkit
-
-# Verify installation
+# Verification
 nvcc --version
 
-# Expected output:
+# Output:
 # nvcc: NVIDIA (R) Cuda compiler driver
 # Copyright (c) 2005-2023 NVIDIA Corporation
-# Built on Fri_Jan__6_12:56:49_PM_UTC_2023
+# Built on Fri_Jan__6_16:45:21_PST_2023
 # Cuda compilation tools, release 12.0, V12.0.140
-# Build cuda_12.0.r12.0/compiler.32282001_0
+# Build cuda_12.0.r12.0/compiler.32267302_0
 ```
 
-**Option 2: Direct from NVIDIA**
-
+**Environment Variables** (added to ~/.bashrc):
 ```bash
-# Download from https://developer.nvidia.com/cuda-downloads
-# Select: Linux > x86_64 > WSL-Ubuntu > 12.x > runfile (local)
-
-wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-keyring_1.1-1_all.deb
-sudo dpkg -i cuda-keyring_1.1-1_all.deb
-sudo apt-get update
-sudo apt-get install -y cuda-toolkit-12-0
+export CUDA_HOME=/usr
+export PATH=$CUDA_HOME/bin:$PATH
+export LD_LIBRARY_PATH=$CUDA_HOME/lib64:$LD_LIBRARY_PATH
 ```
 
-**Manual Installation Required**: Yes (requires sudo password)
+**Compilation Test**: ✅ Passed
+- CUDA Devices: 1
+- Device: NVIDIA GeForce RTX 4060 Laptop GPU
+- Compute Capability: 8.9
+- VRAM: 8187 MB
 
 ---
 
