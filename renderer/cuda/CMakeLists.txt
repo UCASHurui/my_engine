@@ -11,11 +11,19 @@ target_include_directories(EngineRenderer PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 
 # CUDA 源文件列表
 set(CUDA_SOURCES
-    cuda_runtime.cu
+    cuda_runtime_engine.cu
+    rt/rt_core.cu
+)
+
+# Ray tracing headers
+set(RT_HEADERS
+    rt/ray_types.h
+    rt/bvh_builder.h
+    rt/rt_core.h
 )
 
 # 创建 CUDA 库对象（链接到 EngineRenderer）
-add_library(EngineCUDA OBJECT ${CUDA_SOURCES})
+add_library(EngineCUDA OBJECT ${CUDA_SOURCES} ${RT_HEADERS})
 target_link_libraries(EngineCUDA PRIVATE EngineCore CUDA::cuda_driver)
 set_target_properties(EngineCUDA PROPERTIES
     POSITION_INDEPENDENT_CODE ON
