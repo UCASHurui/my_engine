@@ -5,81 +5,27 @@
 
 namespace MyEngine {
 
-// Warp-level reduction using shuffle
-template<typename T>
-__device__ __forceinline__ T warpReduceSum(T val) {
-    for (int offset = warpSize / 2; offset > 0; offset >>= 1) {
-        val += __shfl_down_sync(0xffffffff, val, offset);
-    }
-    return val;
-}
-
-template<typename T>
-__device__ __forceinline__ T warpReduceMin(T val) {
-    for (int offset = warpSize / 2; offset > 0; offset >>= 1) {
-        val = min(val, __shfl_down_sync(0xffffffff, val, offset));
-    }
-    return val;
-}
-
-template<typename T>
-__device__ __forceinline__ T warpReduceMax(T val) {
-    for (int offset = warpSize / 2; offset > 0; offset >>= 1) {
-        val = max(val, __shfl_down_sync(0xffffffff, val, offset));
-    }
-    return val;
-}
-
-// Block-level reduction
+// Block-level reduction using sequential addressing (no warp shuffle)
 template<typename T, ReductionOp Op>
-__device__ T blockReduce(T* sdata, unsigned int tid) {
-    const unsigned int blockSize = blockDim.x;
-
-    // Warp reduction
-    T val = sdata[tid];
-    switch (Op) {
-        case ReductionOp::Sum:
-            val = warpReduceSum(val);
-            break;
-        case ReductionOp::Min:
-            val = warpReduceMin(val);
-            break;
-        case ReductionOp::Max:
-            val = warpReduceMax(val);
-            break;
-        case ReductionOp::Average:
-            val = warpReduceSum(val);
-            break;
-    }
-
-    // Final warp reduction at tid == 0
-    if (tid % warpSize == 0) {
-        sdata[tid / warpSize] = val;
-    }
-    __syncthreads();
-
-    // Reduce across warps
-    const unsigned int warpCount = (blockSize + warpSize - 1) / warpSize;
-    if (tid < warpCount) {
-        val = sdata[tid];
-        switch (Op) {
-            case ReductionOp::Sum:
-                val = warpReduceSum(val);
-                break;
-            case ReductionOp::Min:
-                val = warpReduceMin(val);
-                break;
-            case ReductionOp::Max:
-                val = warpReduceMax(val);
-                break;
-            case ReductionOp::Average:
-                val = warpReduceSum(val);
-                break;
+__device__ T blockReduce(T* sdata, unsigned int tid, unsigned int blockSize) {
+    // Tree reduction in shared memory
+    for (int s = blockSize / 2; s > 0; s >>= 1) {
+        if (tid < s) {
+            switch (Op) {
+                case ReductionOp::Sum:
+                case ReductionOp::Average:
+                    sdata[tid] = sdata[tid] + sdata[tid + s];
+                    break;
+                case ReductionOp::Min:
+                    sdata[tid] = min(sdata[tid], sdata[tid + s]);
+                    break;
+                case ReductionOp::Max:
+                    sdata[tid] = max(sdata[tid], sdata[tid + s]);
+                    break;
+            }
         }
-        sdata[tid] = val;
+        __syncthreads();
     }
-    __syncthreads();
-
     return sdata[0];
 }
 
@@ -101,7 +47,7 @@ __global__ void reduceSumKernel(
     sdata_t[tid] = val;
     __syncthreads();
 
-    T result = blockReduce<T, ReductionOp::Sum>(sdata_t, tid);
+    T result = blockReduce<T, ReductionOp::Sum>(sdata_t, tid, blockDim.x);
 
     if (tid == 0) {
         d_output[blockIdx.x] = result;
@@ -126,7 +72,7 @@ __global__ void reduceMinKernel(
     sdata_t[tid] = val;
     __syncthreads();
 
-    T result = blockReduce<T, ReductionOp::Min>(sdata_t, tid);
+    T result = blockReduce<T, ReductionOp::Min>(sdata_t, tid, blockDim.x);
 
     if (tid == 0) {
         d_output[blockIdx.x] = result;
@@ -151,7 +97,7 @@ __global__ void reduceMaxKernel(
     sdata_t[tid] = val;
     __syncthreads();
 
-    T result = blockReduce<T, ReductionOp::Max>(sdata_t, tid);
+    T result = blockReduce<T, ReductionOp::Max>(sdata_t, tid, blockDim.x);
 
     if (tid == 0) {
         d_output[blockIdx.x] = result;
@@ -172,7 +118,7 @@ __global__ void reduceFinalKernel(
     sdata_t[tid] = (tid < n) ? d_input[tid] : T(0);
     __syncthreads();
 
-    T result = blockReduce<T, Op>(sdata_t, tid);
+    T result = blockReduce<T, Op>(sdata_t, tid, blockDim.x);
 
     if (tid == 0) {
         d_output[0] = result;
@@ -188,6 +134,8 @@ CUDAReduction<T>::CUDAReduction(ReductionOp operation, size_t max_elements)
     if (err != cudaSuccess) {
         CUDA_LOG_ERROR_WITH_CODE("Failed to create stream for reduction", err);
     }
+    // Allocate temp storage for reduction
+    allocateStorage(max_elements);
 }
 
 template<typename T>
@@ -250,9 +198,8 @@ void CUDAReduction<T>::freeStorage() {
 
 template<typename T>
 int CUDAReduction<T>::getOptimalBlockCount(size_t count, int block_size) {
-    int max_blocks = 1024;  // Maximum blocks to launch
-    int grid_size = (count + block_size - 1) / block_size;
-    return min(grid_size, max_blocks);
+    // Don't cap the grid size - process all elements
+    return (count + block_size - 1) / block_size;
 }
 
 template<typename T>
@@ -299,23 +246,59 @@ cudaError_t CUDAReduction<T>::reduceAsync(
 
     // Final reduction if more than one block
     if (grid_size > 1) {
-        int final_block_size = min((int)count, 256);
-        size_t final_smem_size = final_block_size * sizeof(T);
+        // For large numbers of partial results, do a two-level reduction
+        // First, reduce all grid_size partial results to fewer partial results
 
+        // Calculate how many blocks we need to reduce all grid_size results
+        int reduce_block_size = 256;
+        int reduce_grid_size = (grid_size + reduce_block_size - 1) / reduce_block_size;
+        size_t reduce_smem_size = reduce_block_size * sizeof(T);
+
+        // First level: reduce grid_size partial sums to reduce_grid_size partial sums
         switch (_operation) {
             case ReductionOp::Sum:
             case ReductionOp::Average:
-                reduceFinalKernel<T, ReductionOp::Sum><<<1, final_block_size, final_smem_size, use_stream>>>(
-                    _d_temp_storage, d_output, grid_size);
+                reduceSumKernel<<<reduce_grid_size, reduce_block_size, reduce_smem_size, use_stream>>>(
+                    _d_temp_storage, _d_temp_storage, grid_size);
                 break;
             case ReductionOp::Min:
-                reduceFinalKernel<T, ReductionOp::Min><<<1, final_block_size, final_smem_size, use_stream>>>(
-                    _d_temp_storage, d_output, grid_size);
+                reduceMinKernel<<<reduce_grid_size, reduce_block_size, reduce_smem_size, use_stream>>>(
+                    _d_temp_storage, _d_temp_storage, grid_size);
                 break;
             case ReductionOp::Max:
-                reduceFinalKernel<T, ReductionOp::Max><<<1, final_block_size, final_smem_size, use_stream>>>(
-                    _d_temp_storage, d_output, grid_size);
+                reduceMaxKernel<<<reduce_grid_size, reduce_block_size, reduce_smem_size, use_stream>>>(
+                    _d_temp_storage, _d_temp_storage, grid_size);
                 break;
+        }
+        // Synchronize to ensure all writes are visible
+        CUDA_CHECK(cudaStreamSynchronize(use_stream));
+
+        // Second level: reduce reduce_grid_size partial sums to one result
+        if (reduce_grid_size > 1) {
+            // Use a full block size (256) for the final reduction
+            int final_block_size = 256;
+            size_t final_smem_size = final_block_size * sizeof(T);
+
+            // The reduceFinalKernel expects n = number of elements to reduce
+            // which is reduce_grid_size
+            switch (_operation) {
+                case ReductionOp::Sum:
+                case ReductionOp::Average:
+                    reduceFinalKernel<T, ReductionOp::Sum><<<1, final_block_size, final_smem_size, use_stream>>>(
+                        _d_temp_storage, d_output, reduce_grid_size);
+                    break;
+                case ReductionOp::Min:
+                    reduceFinalKernel<T, ReductionOp::Min><<<1, final_block_size, final_smem_size, use_stream>>>(
+                        _d_temp_storage, d_output, reduce_grid_size);
+                    break;
+                case ReductionOp::Max:
+                    reduceFinalKernel<T, ReductionOp::Max><<<1, final_block_size, final_smem_size, use_stream>>>(
+                        _d_temp_storage, d_output, reduce_grid_size);
+                    break;
+            }
+        } else {
+            // Single partial result left
+            cudaMemcpy(d_output, _d_temp_storage, sizeof(T), cudaMemcpyDeviceToDevice);
         }
     } else {
         // Single block, result is already in temp storage
@@ -325,9 +308,9 @@ cudaError_t CUDAReduction<T>::reduceAsync(
     // For average, divide by count
     if (_operation == ReductionOp::Average) {
         T result;
-        cudaMemcpy(&result, d_output, sizeof(T), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(&result, d_output, sizeof(T), cudaMemcpyDeviceToHost);
         result = result / (T)count;
-        cudaMemcpy(d_output, &result, sizeof(T), cudaMemcpyDeviceToDevice);
+        cudaMemcpy(d_output, &result, sizeof(T), cudaMemcpyHostToDevice);
     }
 
     return cudaPeekAtLastError();
@@ -361,19 +344,57 @@ ReductionResult<T> CUDAReduction<T>::reduce(
     cudaEventDestroy(start);
     cudaEventDestroy(end);
 
-    // Read result
+    // Read result - use cudaMemcpy to ensure synchronization
     T result = T{};
     if (err == cudaSuccess) {
-        err = cudaMemcpy(&result, d_output, sizeof(T), cudaMemcpyDeviceToDevice);
+        // Ensure all GPU operations are complete
+        cudaDeviceSynchronize();
+        err = cudaMemcpy(&result, d_output, sizeof(T), cudaMemcpyDeviceToHost);
     }
 
     cudaFree(d_output);
     return ReductionResult<T>(result, err, elapsed_ms);
 }
 
+// Convenience function implementations
+template<typename T>
+ReductionResult<T> reduceSum(const T* d_input, size_t count, cudaStream_t stream) {
+    CUDAReduction<T> reducer(ReductionOp::Sum, count);
+    return reducer.reduce(d_input, count, stream);
+}
+
+template<typename T>
+ReductionResult<T> reduceMin(const T* d_input, size_t count, cudaStream_t stream) {
+    CUDAReduction<T> reducer(ReductionOp::Min, count);
+    return reducer.reduce(d_input, count, stream);
+}
+
+template<typename T>
+ReductionResult<T> reduceMax(const T* d_input, size_t count, cudaStream_t stream) {
+    CUDAReduction<T> reducer(ReductionOp::Max, count);
+    return reducer.reduce(d_input, count, stream);
+}
+
+template<typename T>
+ReductionResult<T> reduceAverage(const T* d_input, size_t count, cudaStream_t stream) {
+    CUDAReduction<T> reducer(ReductionOp::Average, count);
+    return reducer.reduce(d_input, count, stream);
+}
+
 // Explicit instantiations for CUDAReduction class
 template class CUDAReduction<float>;
 template class CUDAReduction<int>;
 template class CUDAReduction<double>;
+
+// Explicit template instantiations for convenience functions
+template ReductionResult<float> reduceSum(const float*, size_t, cudaStream_t);
+template ReductionResult<float> reduceMin(const float*, size_t, cudaStream_t);
+template ReductionResult<float> reduceMax(const float*, size_t, cudaStream_t);
+template ReductionResult<float> reduceAverage(const float*, size_t, cudaStream_t);
+
+template ReductionResult<int> reduceSum(const int*, size_t, cudaStream_t);
+template ReductionResult<int> reduceMin(const int*, size_t, cudaStream_t);
+template ReductionResult<int> reduceMax(const int*, size_t, cudaStream_t);
+template ReductionResult<int> reduceAverage(const int*, size_t, cudaStream_t);
 
 } // namespace MyEngine

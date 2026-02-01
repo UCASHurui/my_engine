@@ -75,51 +75,33 @@ private:
 };
 
 // Convenience functions for simple reductions (inline implementations)
+// These require the full class definition, so they're in reduction.cu
 template<typename T>
-inline ReductionResult<T> reduceSum(
+ReductionResult<T> reduceSum(
     const T* d_input,
     size_t count,
     cudaStream_t stream = 0
-) {
-    CUDAReduction<T> reducer(ReductionOp::Sum, count);
-    return reducer.reduce(d_input, count, stream);
-}
+);
 
 template<typename T>
-inline ReductionResult<T> reduceMin(
+ReductionResult<T> reduceMin(
     const T* d_input,
     size_t count,
     cudaStream_t stream = 0
-) {
-    CUDAReduction<T> reducer(ReductionOp::Min, count);
-    return reducer.reduce(d_input, count, stream);
-}
+);
 
 template<typename T>
-inline ReductionResult<T> reduceMax(
+ReductionResult<T> reduceMax(
     const T* d_input,
     size_t count,
     cudaStream_t stream = 0
-) {
-    CUDAReduction<T> reducer(ReductionOp::Max, count);
-    return reducer.reduce(d_input, count, stream);
-}
+);
 
 template<typename T>
-inline ReductionResult<T> reduceAverage(
+ReductionResult<T> reduceAverage(
     const T* d_input,
     size_t count,
     cudaStream_t stream = 0
-) {
-    CUDAReduction<T> reducer(ReductionOp::Average, count);
-    return reducer.reduce(d_input, count, stream);
-}
-
-// Specializations for common types
-template<>
-class CUDAReduction<float>;
-
-template<>
-class CUDAReduction<int>;
+);
 
 } // namespace MyEngine
