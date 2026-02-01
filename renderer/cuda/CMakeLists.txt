@@ -1,6 +1,9 @@
 # CUDA 子模块
 find_package(CUDA REQUIRED)
 
+# OpenGL required for interop
+find_package(OpenGL REQUIRED)
+
 # 启用 CUDA 编译选项
 cuda_select_nvcc_arch_flags(CUDA_ARCH_FLAGS Auto)
 list(APPEND CUDA_NVCC_FLAGS ${CUDA_ARCH_FLAGS})
@@ -15,6 +18,8 @@ set(CUDA_SOURCES
     rt/rt_core.cu
     compute/particle_system.cu
     compute/post_processing.cu
+    interop/cuda_texture.cu
+    interop/cuda_gl_interop.cpp
 )
 
 # Ray tracing headers
@@ -30,9 +35,15 @@ set(COMPUTE_HEADERS
     compute/post_processing.h
 )
 
+# Interop headers
+set(INTEROP_HEADERS
+    interop/cuda_texture.h
+    interop/cuda_gl_interop.h
+)
+
 # 创建 CUDA 库对象（链接到 EngineRenderer）
-add_library(EngineCUDA OBJECT ${CUDA_SOURCES} ${RT_HEADERS} ${COMPUTE_HEADERS})
-target_link_libraries(EngineCUDA PRIVATE EngineCore CUDA::cuda_driver)
+add_library(EngineCUDA OBJECT ${CUDA_SOURCES} ${RT_HEADERS} ${COMPUTE_HEADERS} ${INTEROP_HEADERS})
+target_link_libraries(EngineCUDA PRIVATE EngineCore CUDA::cuda_driver OpenGL::GL)
 set_target_properties(EngineCUDA PROPERTIES
     POSITION_INDEPENDENT_CODE ON
 )
@@ -40,4 +51,9 @@ set_target_properties(EngineCUDA PROPERTIES
 # CUDA 测试程序
 add_executable(test_cuda test_cuda.cpp)
 target_include_directories(test_cuda PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(test_cuda PRIVATE ${CUDA_LIBRARIES})
+target_link_libraries(test_cuda PRIVATE ${CUDA_LIBRARIES} OpenGL::GL)
+
+# Interop 测试程序
+add_executable(test_interop test_interop.cu)
+target_include_directories(test_interop PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+target_link_libraries(test_interop PRIVATE ${CUDA_LIBRARIES} OpenGL::GL)
