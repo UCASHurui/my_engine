@@ -4,6 +4,18 @@
 
 namespace MyEngine {
 
+// 像素格式
+enum PixelFormat {
+    PF_R,
+    PF_RG,
+    PF_RGB,
+    PF_RGBA,
+    PF_DEPTH,
+    PF_DEPTH_STENCIL,
+    PF_LUMINANCE,
+    PF_LUMINANCE_ALPHA
+};
+
 // 使用 Vector4 作为颜色 (r, g, b, a)
 using Color = Vector4;
 

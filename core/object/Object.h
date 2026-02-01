@@ -84,7 +84,7 @@ template<typename T>
 class Ref {
 public:
     Ref() : _ptr(nullptr) {}
-    explicit Ref(T* ptr) : _ptr(ptr) {
+    Ref(T* ptr) : _ptr(ptr) {
         if (_ptr) _ptr->reference();
     }
     Ref(const Ref& other) : _ptr(other._ptr) {

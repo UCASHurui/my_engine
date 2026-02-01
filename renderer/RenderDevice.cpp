@@ -2,6 +2,8 @@
 
 namespace MyEngine {
 
+RenderDevice* RenderDevice::_singleton = nullptr;
+
 class NullRenderDevice : public RenderDevice {
 public:
     NullRenderDevice();

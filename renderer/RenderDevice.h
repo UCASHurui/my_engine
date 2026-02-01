@@ -8,10 +8,17 @@
 
 namespace MyEngine {
 
+// 前向声明
+class RenderDevice;
+
 // 渲染设备抽象
 class RenderDevice {
 public:
     virtual ~RenderDevice() = default;
+
+    // 单例
+    static RenderDevice* get_singleton() { return _singleton; }
+    static void set_singleton(RenderDevice* device) { _singleton = device; }
 
     // 类型定义
     using TextureID = uint32_t;
@@ -232,6 +239,15 @@ public:
 
     // 截图
     virtual void screenshot(Image& image) = 0;
+
+protected:
+    RenderDevice() = default;
+    static RenderDevice* _singleton;
+
+public:
+    // 禁止复制
+    RenderDevice(const RenderDevice&) = delete;
+    RenderDevice& operator=(const RenderDevice&) = delete;
 };
 
 } // namespace MyEngine
