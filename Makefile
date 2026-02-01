@@ -9,7 +9,7 @@ SOURCES = $(wildcard core/**/*.cpp core/*.cpp) \
           $(wildcard scene/**/*.cpp scene/*.cpp) \
           $(wildcard renderer/*.cpp) \
           $(wildcard servers/**/*.cpp servers/*.cpp) \
-          $(wildcard platform/*.cpp) \
+          $(wildcard platform/**/*.cpp platform/*.cpp) \
           main.cpp
 
 HEADERS = $(wildcard core/**/*.h core/*.h) \

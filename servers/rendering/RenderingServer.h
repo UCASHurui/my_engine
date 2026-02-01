@@ -64,7 +64,7 @@ private:
 
     Vector<Viewport*> _active_viewports;
     Camera3D* _current_camera = nullptr;
-    Color _clear_color = Color::BLACK;
+    Color _clear_color = Color(0.0f, 0.0f, 0.0f, 1.0f);  // BLACK
 
     // 内部渲染
     void _render_scene();

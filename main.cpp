@@ -3,6 +3,8 @@
 #include "core/os/Window.h"
 #include "core/os/Input.h"
 
+using namespace MyEngine;
+
 int main(int argc, char* argv[]) {
     std::cout << "MyEngine v0.1.0" << std::endl;
 

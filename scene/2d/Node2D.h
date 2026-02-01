@@ -30,6 +30,15 @@ struct Color {
     }
 };
 
+// 颜色常量定义
+inline const Color Color::WHITE(1.0f, 1.0f, 1.0f, 1.0f);
+inline const Color Color::BLACK(0.0f, 0.0f, 0.0f, 1.0f);
+inline const Color Color::RED(1.0f, 0.0f, 0.0f, 1.0f);
+inline const Color Color::GREEN(0.0f, 1.0f, 0.0f, 1.0f);
+inline const Color Color::BLUE(0.0f, 0.0f, 1.0f, 1.0f);
+inline const Color Color::YELLOW(1.0f, 1.0f, 0.0f, 1.0f);
+inline const Color Color::TRANSPARENT(0.0f, 0.0f, 0.0f, 0.0f);
+
 // 2D 节点基类
 class Node2D : public Node {
 
