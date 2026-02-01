@@ -21,6 +21,15 @@ inline __host__ __device__ float3 vdiv(float3 a, float s) {
     return make_float3(a.x / s, a.y / s, a.z / s);
 }
 
+// Element-wise vector operations
+inline __host__ __device__ float3 vmul(float3 a, float3 b) {
+    return make_float3(a.x * b.x, a.y * b.y, a.z * b.z);
+}
+
+inline __host__ __device__ float3 vdiv(float3 a, float3 b) {
+    return make_float3(a.x / b.x, a.y / b.y, a.z / b.z);
+}
+
 inline __host__ __device__ float dot(float3 a, float3 b) {
     return a.x * b.x + a.y * b.y + a.z * b.z;
 }
