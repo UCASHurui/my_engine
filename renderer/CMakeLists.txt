@@ -9,3 +9,6 @@ target_sources(EngineRenderer PRIVATE
 )
 target_include_directories(EngineRenderer PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/renderer)
 target_link_libraries(EngineRenderer PRIVATE OpenGL::GL EngineCore EnginePlatform)
+
+# CUDA 子模块 (可选)
+add_subdirectory(cuda)
