@@ -51,13 +51,15 @@ public:
     std::function<void(BasePanel*)> on_focus_gained;
     std::function<void(BasePanel*)> on_focus_lost;
 
-protected:
+    // Public for ImGui access
+    bool _visible = true;
+
+public:
     // Override in subclasses to render the panel content
     virtual void on_render() = 0;
 
     String _name;
     String _display_name;
-    bool _visible = true;
     bool _docked = true;
     bool _has_focus = false;
 

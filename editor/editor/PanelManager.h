@@ -23,6 +23,7 @@ public:
 
     // Panel lifecycle
     BasePanel* create_panel(const String& type);
+    void add_panel(BasePanel* panel);
     void destroy_panel(BasePanel* panel);
     void destroy_panel(const String& name);
 
@@ -37,7 +38,6 @@ public:
 
     // Update and render
     void update(float delta);
-    void render();
 
     // Layout
     void save_layout(const String& filepath);

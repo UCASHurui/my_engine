@@ -1,5 +1,8 @@
 #include "editor/EditorApp.h"
 #include "os/OS.h"
+#include "PanelManager.h"
+#include "ScenePanel.h"
+#include "InspectorPanel.h"
 #include <iostream>
 #include <imgui.h>
 
@@ -21,6 +24,16 @@ bool EditorApp::initialize(const EditorConfig& config) {
     _config = config;
     _initialized = true;
     _running = true;
+
+    // Initialize default panels
+    GetPanelManager().initialize();
+
+    // Create scene panel
+    GetPanelManager().add_panel(new ScenePanel());
+
+    // Create inspector panel
+    GetPanelManager().add_panel(new InspectorPanel());
+
     std::cout << "Editor initialized successfully" << std::endl;
     return true;
 }
@@ -58,26 +71,68 @@ void EditorApp::update(float delta) {
     // ImGui new frame
     ImGui::NewFrame();
 
-    // Simple menu
+    // Main menu bar
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
-            if (ImGui::MenuItem("Exit")) {
+            if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
+                // TODO: New scene
+            }
+            if (ImGui::MenuItem("Open Scene", "Ctrl+O")) {
+                // TODO: Open scene
+            }
+            if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
+                // TODO: Save scene
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Exit", "Alt+F4")) {
                 request_exit();
             }
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("View")) {
-            ImGui::MenuItem("Scene", nullptr);
-            ImGui::MenuItem("Inspector", nullptr);
+            // Toggle panels
+            static bool show_scene = true;
+            static bool show_inspector = true;
+            ImGui::MenuItem("Scene", nullptr, &show_scene);
+            ImGui::MenuItem("Inspector", nullptr, &show_inspector);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Tools")) {
+            ImGui::MenuItem("Profiler", nullptr);
+            ImGui::EndMenu();
+        }
+        if (ImGui::BeginMenu("Help")) {
+            ImGui::MenuItem("About", nullptr);
             ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
 
-    // Simple window
-    ImGui::Begin("Welcome");
-    ImGui::Text("MyEngine Editor");
-    ImGui::Text("Version 0.1.0");
+    // Simple panel layout
+    static float scene_width = 250.0f;
+
+    ImGui::SetNextWindowPos(ImVec2(0, 20));
+    ImGui::SetNextWindowSize(ImVec2(1600, 880));
+    ImGui::Begin("Editor", nullptr, ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+
+    // Scene panel on left
+    ImGui::BeginChild("ScenePanel", ImVec2(scene_width, -1), true);
+    BasePanel* scene = GetPanelManager().get_panel("Scene");
+    if (scene) {
+        scene->on_render();
+    }
+    ImGui::EndChild();
+
+    ImGui::SameLine();
+
+    // Inspector panel on right
+    ImGui::BeginChild("InspectorPanel", ImVec2(-1, -1), true);
+    BasePanel* inspector = GetPanelManager().get_panel("Inspector");
+    if (inspector) {
+        inspector->on_render();
+    }
+    ImGui::EndChild();
+
     ImGui::End();
 }
 
@@ -86,6 +141,7 @@ void EditorApp::render() {
 }
 
 void EditorApp::shutdown() {
+    GetPanelManager().shutdown();
     _initialized = false;
     _running = false;
     std::cout << "Editor shutdown complete" << std::endl;

@@ -1,6 +1,7 @@
 #include "editor/PanelManager.h"
 #include "io/FileAccess.h"
 #include <algorithm>
+#include <imgui.h>
 
 namespace MyEngine::Editor {
 
@@ -27,13 +28,16 @@ void PanelManager::shutdown() {
 }
 
 BasePanel* PanelManager::create_panel(const String& type) {
-    BasePanel* panel = create_panel(type);
-    if (panel) {
-        panel->on_init();
-        _panels.push_back(std::unique_ptr<BasePanel>(panel));
-        _panel_by_name[type] = panel;
-    }
-    return panel;
+    // Panel factory pattern - override in subclass or register factories
+    (void)type;
+    return nullptr;
+}
+
+void PanelManager::add_panel(BasePanel* panel) {
+    if (!panel) return;
+    panel->on_init();
+    _panels.push_back(std::unique_ptr<BasePanel>(panel));
+    _panel_by_name[panel->get_name()] = panel;
 }
 
 void PanelManager::destroy_panel(BasePanel* panel) {
@@ -99,11 +103,6 @@ void PanelManager::update(float delta) {
             panel->on_update(delta);
         }
     }
-}
-
-void PanelManager::render() {
-    // Panels will be rendered by the main editor loop
-    // using their own ImGui windows/docking
 }
 
 void PanelManager::save_layout(const String& filepath) {

@@ -24,6 +24,10 @@ target_sources(EngineEditor PRIVATE
     editor/PanelManager.h
     editor/BasePanel.cpp
     editor/BasePanel.h
+    editor/ScenePanel.cpp
+    editor/ScenePanel.h
+    editor/InspectorPanel.cpp
+    editor/InspectorPanel.h
     editor/ImGuiRenderer.cpp
     editor/ImGuiRenderer.h
     editor/ImGuiPlatform.cpp
