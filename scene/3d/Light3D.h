@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Node3D.h"
-#include "core/math/Color.h"
+#include "math/Color.h"
 
 namespace MyEngine {
 

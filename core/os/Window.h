@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/math/Vector2.h"
-#include "core/containers/String.h"
+#include "math/Vector2.h"
+#include "containers/String.h"
 
 namespace MyEngine {
 

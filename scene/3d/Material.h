@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/object/RefCounted.h"
-#include "core/containers/String.h"
+#include "object/RefCounted.h"
+#include "containers/String.h"
 
 namespace MyEngine {
 

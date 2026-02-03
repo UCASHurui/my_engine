@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/object/RefCounted.h"
-#include "core/variant/Variant.h"
+#include "object/RefCounted.h"
+#include "variant/Variant.h"
 #include <string>
 #include <vector>
 #include <unordered_map>

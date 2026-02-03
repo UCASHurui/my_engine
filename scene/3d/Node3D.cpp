@@ -1,5 +1,5 @@
 #include "Node3D.h"
-#include "core/math/Matrix4.h"
+#include "math/Matrix4.h"
 
 namespace MyEngine {
 

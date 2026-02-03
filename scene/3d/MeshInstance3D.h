@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Node3D.h"
-#include "core/containers/Vector.h"
-#include "core/object/Object.h"
+#include "containers/Vector.h"
+#include "object/Object.h"
 #include "Mesh.h"
 #include "Material.h"
 

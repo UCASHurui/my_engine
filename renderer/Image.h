@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/math/Vector4.h"
-#include "core/math/Color.h"
+#include "math/Vector4.h"
+#include "math/Color.h"
 
 namespace MyEngine {
 

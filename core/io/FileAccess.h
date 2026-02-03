@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/containers/String.h"
+#include "containers/String.h"
 #include <cstdio>
 #include <cstdint>
 #include <vector>

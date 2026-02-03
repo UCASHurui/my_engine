@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Node2D.h"
-#include "core/containers/HashMap.h"
+#include "containers/HashMap.h"
 #include "Texture2D.h"
 
 namespace MyEngine {

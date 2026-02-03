@@ -1,5 +1,5 @@
 #include "GPUParticles3D.h"
-#include "core/math/Math.h"
+#include "math/Math.h"
 
 namespace MyEngine {
 

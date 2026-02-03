@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/object/Object.h"
-#include "core/os/Input.h"
-#include "core/math/Vector2.h"
+#include "object/Object.h"
+#include "os/Input.h"
+#include "math/Vector2.h"
 #include "Node.h"
 #include <functional>
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/object/Resource.h"
-#include "core/math/Vector3.h"
-#include "core/math/Transform.h"
-#include "core/math/Color.h"
+#include "object/Resource.h"
+#include "math/Vector3.h"
+#include "math/Transform.h"
+#include "math/Color.h"
 #include <string>
 #include <vector>
 

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/containers/Vector.h"
-#include "core/containers/String.h"
-#include "core/math/Transform.h"
-#include "renderer/Image.h"
+#include "containers/Vector.h"
+#include "containers/String.h"
+#include "math/Transform.h"
+#include "Image.h"
 
 namespace MyEngine {
 

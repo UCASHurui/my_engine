@@ -1,4 +1,4 @@
-#include "profiler/cuda_profiler.h"
+#include "cuda_profiler.h"
 #include "cuda_error.h"
 
 namespace MyEngine {

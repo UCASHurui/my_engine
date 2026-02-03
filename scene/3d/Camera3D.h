@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Node3D.h"
-#include "core/math/Matrix4.h"
-#include "core/math/Ray.h"
+#include "math/Matrix4.h"
+#include "math/Ray.h"
 
 namespace MyEngine {
 

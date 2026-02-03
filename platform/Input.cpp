@@ -1,4 +1,4 @@
-#include "core/os/Input.h"
+#include "os/Input.h"
 
 namespace MyEngine {
 

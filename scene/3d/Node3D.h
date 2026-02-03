@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/math/Vector3.h"
-#include "core/math/Transform.h"
-#include "scene/main/Node.h"
+#include "math/Vector3.h"
+#include "math/Transform.h"
+#include "main/Node.h"
 
 namespace MyEngine {
 

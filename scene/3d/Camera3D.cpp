@@ -1,6 +1,6 @@
 #include "Camera3D.h"
-#include "core/os/OS.h"
-#include "core/math/Math.h"
+#include "os/OS.h"
+#include "math/Math.h"
 
 namespace MyEngine {
 

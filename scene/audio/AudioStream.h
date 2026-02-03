@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/object/Resource.h"
-#include "core/math/Vector3.h"
+#include "object/Resource.h"
+#include "math/Vector3.h"
 #include <string>
 #include <vector>
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/containers/String.h"
-#include "core/math/Vector2.h"
-#include "core/variant/Variant.h"
+#include "containers/String.h"
+#include "math/Vector2.h"
+#include "variant/Variant.h"
 #include "Image.h"
 #include <cstdint>
 

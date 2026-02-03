@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/variant/Variant.h"
-#include "core/object/Object.h"
+#include "variant/Variant.h"
+#include "object/Object.h"
 
 namespace MyEngine {
 

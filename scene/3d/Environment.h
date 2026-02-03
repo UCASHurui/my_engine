@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/math/Color.h"
-#include "core/math/Vector3.h"
-#include "core/object/RefCounted.h"
-#include "core/variant/Variant.h"
+#include "math/Color.h"
+#include "math/Vector3.h"
+#include "object/RefCounted.h"
+#include "variant/Variant.h"
 #include <cstdint>
 
 namespace MyEngine {

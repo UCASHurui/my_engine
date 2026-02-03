@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/containers/String.h"
-#include "core/containers/HashMap.h"
-#include "core/variant/Variant.h"
+#include "containers/String.h"
+#include "containers/HashMap.h"
+#include "variant/Variant.h"
 #include <functional>
 #include <vector>
 

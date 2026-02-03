@@ -1,6 +1,6 @@
 #include "Texture2D.h"
-#include "core/os/OS.h"
-#include "core/io/FileAccess.h"
+#include "os/OS.h"
+#include "io/FileAccess.h"
 #include "renderer/RenderDevice.h"
 #include <cstring>
 

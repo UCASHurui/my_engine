@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ClassDB.h"
-#include "core/variant/Variant.h"
+#include "variant/Variant.h"
 
 namespace MyEngine {
 

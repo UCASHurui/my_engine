@@ -1,10 +1,10 @@
 #pragma once
 
-#include "core/object/Resource.h"
-#include "core/math/Color.h"
-#include "core/math/Vector2.h"
-#include "core/math/Vector3.h"
-#include "core/math/Matrix4.h"
+#include "object/Resource.h"
+#include "math/Color.h"
+#include "math/Vector2.h"
+#include "math/Vector3.h"
+#include "math/Matrix4.h"
 #include "Texture2D.h"
 #include <string>
 #include <unordered_map>

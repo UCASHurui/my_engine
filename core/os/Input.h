@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/containers/String.h"
-#include "core/math/Vector2.h"
-#include "core/containers/Vector.h"
+#include "containers/String.h"
+#include "math/Vector2.h"
+#include "containers/Vector.h"
 #include <set>
 #include <map>
 #include <vector>

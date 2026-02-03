@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Node.h"
-#include "core/math/Rect2.h"
+#include "math/Rect2.h"
 
 namespace MyEngine {
 

@@ -1,13 +1,27 @@
 #pragma once
 
-#include "core/containers/String.h"
-#include "core/math/Vector2.h"
-#include "core/object/RefCounted.h"
-#include "renderer/Image.h"
-#include "renderer/RenderDevice.h"
+#include "containers/String.h"
+#include "math/Vector2.h"
+#include "object/RefCounted.h"
 #include <cstdint>
 
 namespace MyEngine {
+
+// Forward declarations to avoid circular dependencies
+class Image;
+class RenderDevice;
+
+// Texture pixel format enum (defined here to avoid renderer dependency)
+enum TexturePixelFormat {
+    TEX_PF_RGBA,
+    TEX_PF_RGB,
+    TEX_PF_RGBA16F,
+    TEX_PF_RGBA32F,
+    TEX_PF_DEPTH
+};
+
+// Texture ID type
+using TextureID = uint32_t;
 
 // 纹理过滤模式
 enum class TextureFilter {
@@ -51,14 +65,14 @@ public:
     ~Texture2D() override;
 
     // 创建空纹理
-    bool create(int width, int height, PixelFormat format = PF_RGBA,
+    bool create(int width, int height, TexturePixelFormat format = TexturePixelFormat::TEX_PF_RGBA,
                 const TextureParams& params = TextureParams());
 
     // 从图像创建
     bool create_from_image(const Image& image, const TextureParams& params = TextureParams());
 
     // 从数据创建
-    bool create_from_data(int width, int height, PixelFormat format,
+    bool create_from_data(int width, int height, TexturePixelFormat format,
                           const void* data, const TextureParams& params = TextureParams());
 
     // 更新纹理数据
@@ -74,10 +88,10 @@ public:
     int get_width() const { return _width; }
     int get_height() const { return _height; }
     Vector2 get_size() const { return Vector2((float)_width, (float)_height); }
-    PixelFormat get_format() const { return _format; }
+    TexturePixelFormat get_format() const { return _format; }
 
     // 资源句柄
-    RenderDevice::TextureID get_handle() const { return _texture_id; }
+    TextureID get_handle() const { return _texture_id; }
 
     // 加载纹理 (从文件)
     static Ref<Texture2D> load(const String& path);
@@ -88,8 +102,8 @@ public:
 private:
     int _width = 0;
     int _height = 0;
-    PixelFormat _format = PF_RGBA;
-    RenderDevice::TextureID _texture_id = 0;
+    TexturePixelFormat _format = TexturePixelFormat::TEX_PF_RGBA;
+    TextureID _texture_id = 0;
     TextureParams _params;
 
     bool _allocate();

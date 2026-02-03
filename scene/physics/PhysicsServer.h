@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/math/Vector3.h"
-#include "core/object/RefCounted.h"
+#include "math/Vector3.h"
+#include "object/RefCounted.h"
 #include "RigidBody3D.h"
 #include "CollisionShape3D.h"
 #include <vector>

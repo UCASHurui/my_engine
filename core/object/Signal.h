@@ -1,8 +1,8 @@
 #pragma once
 
-#include "core/containers/Vector.h"
-#include "core/containers/HashMap.h"
-#include "core/variant/Variant.h"
+#include "containers/Vector.h"
+#include "containers/HashMap.h"
+#include "variant/Variant.h"
 #include <functional>
 
 namespace MyEngine {

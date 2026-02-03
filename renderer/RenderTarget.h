@@ -1,7 +1,8 @@
 #pragma once
 
-#include "core/math/Vector2.h"
-#include "scene/resources/Texture2D.h"
+#include "math/Vector2.h"
+#include "math/Color.h"
+#include "resources/Texture2D.h"
 #include <cstdint>
 
 namespace MyEngine {

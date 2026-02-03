@@ -1,5 +1,5 @@
 #include "RenderDeviceGL.h"
-#include "core/os/OS.h"
+#include "os/OS.h"
 
 namespace MyEngine {
 

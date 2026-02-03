@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/containers/String.h"
+#include "containers/String.h"
 #include <cstdint>
 #include <cstring>
 #include <type_traits>

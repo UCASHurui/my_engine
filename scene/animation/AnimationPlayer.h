@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/object/RefCounted.h"
+#include "object/RefCounted.h"
 #include "Animation.h"
 #include <unordered_map>
 

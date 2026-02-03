@@ -1,5 +1,5 @@
 #include "ResourceLoader.h"
-#include "core/object/Object.h"
+#include "object/Object.h"
 
 namespace MyEngine {
 

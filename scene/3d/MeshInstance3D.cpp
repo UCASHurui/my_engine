@@ -1,5 +1,5 @@
 #include "MeshInstance3D.h"
-#include "scene/main/Node.h"
+#include "main/Node.h"
 
 namespace MyEngine {
 

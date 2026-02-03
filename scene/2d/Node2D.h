@@ -1,9 +1,9 @@
 #pragma once
 
-#include "core/math/Vector2.h"
-#include "core/math/Rect2.h"
-#include "core/math/Transform.h"
-#include "scene/main/Node.h"
+#include "math/Vector2.h"
+#include "math/Rect2.h"
+#include "math/Transform.h"
+#include "main/Node.h"
 
 namespace MyEngine {
 

@@ -1,5 +1,5 @@
 #include "Variant.h"
-#include "core/containers/String.h"
+#include "containers/String.h"
 #include <string>
 
 namespace MyEngine {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/object/Object.h"
-#include "core/math/Transform.h"
+#include "object/Object.h"
+#include "math/Transform.h"
 
 namespace MyEngine {
 

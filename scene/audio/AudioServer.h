@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/object/RefCounted.h"
-#include "core/math/Vector3.h"
+#include "object/RefCounted.h"
+#include "math/Vector3.h"
 #include "AudioStream.h"
 #include <vector>
 #include <mutex>

@@ -1,7 +1,7 @@
 #pragma once
 
-#include "core/containers/String.h"
-#include "core/containers/HashMap.h"
+#include "containers/String.h"
+#include "containers/HashMap.h"
 
 namespace MyEngine {
 

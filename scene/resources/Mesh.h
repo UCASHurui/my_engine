@@ -1,11 +1,11 @@
 #pragma once
 
-#include "core/containers/Vector.h"
-#include "core/containers/String.h"
-#include "core/math/Vector2.h"
-#include "core/math/Vector3.h"
-#include "core/variant/Variant.h"
-#include "core/object/RefCounted.h"
+#include "containers/Vector.h"
+#include "containers/String.h"
+#include "math/Vector2.h"
+#include "math/Vector3.h"
+#include "variant/Variant.h"
+#include "object/RefCounted.h"
 #include "renderer/RenderDevice.h"
 #include <cstdint>
 

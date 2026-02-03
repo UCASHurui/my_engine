@@ -1,13 +1,13 @@
 #pragma once
 
-#include "core/math/Vector2.h"
-#include "core/math/Vector3.h"
-#include "core/math/Matrix4.h"
-#include "core/math/Math.h"
-#include "core/containers/Vector.h"
-#include "core/object/RefCounted.h"
-#include "scene/resources/Texture2D.h"
-#include "scene/resources/Mesh.h"
+#include "math/Vector2.h"
+#include "math/Vector3.h"
+#include "math/Matrix4.h"
+#include "math/Math.h"
+#include "containers/Vector.h"
+#include "object/RefCounted.h"
+#include "resources/Texture2D.h"
+#include "resources/Mesh.h"
 #include "renderer/RenderDevice.h"
 
 namespace MyEngine {

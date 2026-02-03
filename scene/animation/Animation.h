@@ -1,6 +1,6 @@
 #pragma once
 
-#include "core/object/Resource.h"
+#include "object/Resource.h"
 #include "AnimationTrack.h"
 #include <unordered_map>
 

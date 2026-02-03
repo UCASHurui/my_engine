@@ -1,6 +1,6 @@
 #include "PostProcess.h"
-#include "scene/resources/Texture2D.h"
-#include "renderer/RenderTarget.h"
+#include "resources/Texture2D.h"
+#include "RenderTarget.h"
 
 namespace MyEngine {
 

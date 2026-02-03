@@ -1,6 +1,6 @@
 #include "RenderingServer.h"
-#include "core/os/OS.h"
-#include "core/math/Transform.h"
+#include "os/OS.h"
+#include "math/Transform.h"
 
 namespace MyEngine {
 
